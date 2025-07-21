@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV/ATS Maker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f8fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .editor-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            font-size: 1.4rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.5;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .add-item-btn {
+            background: #27ae60;
+            font-size: 14px;
+            padding: 10px 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .add-item-btn:hover {
+            background: #219a52;
+        }
+        
+        .remove-item-btn {
+            background: #e74c3c;
+            font-size: 12px;
+            padding: 8px 14px;
+            margin-left: 10px;
+        }
+        
+        .remove-item-btn:hover {
+            background: #c0392b;
+        }
+        
+        .item-controls {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .preview-section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
+        
+        .cv-preview {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            min-height: 297mm;
+            box-shadow: 0 0 25px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+        }
+        
+        .cv-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .cv-name {
+            font-size: 28px;
+            font-weight: 900;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        
+        .cv-contact {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .cv-contact a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .cv-contact a:hover {
+            text-decoration: underline;
+        }
+        
+        .cv-section {
+            margin-bottom: 28px;
+        }
+        
+        .cv-section-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #2c3e50;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #2c3e50;
+            letter-spacing: 0.5px;
+        }
+        
+        .cv-item {
+            margin-bottom: 22px;
+        }
+        
+        .cv-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .cv-item-title {
+            font-weight: 800;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        
+        .cv-item-date {
+            font-style: italic;
+            color: #555;
+            font-size: 14px;
+            white-space: nowrap;
+            margin-left: 15px;
+        }
+        
+        .cv-item-subtitle {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 15px;
+        }
+        
+        .cv-item-location {
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .cv-item-description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+        }
+        
+        .cv-item-description ul {
+            margin-left: 20px;
+        }
+        
+        .cv-item-description li {
+            margin-bottom: 8px;
+        }
+        
+        .skills-list {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .section-tip {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .header-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .cv-preview {
+                padding: 20px;
+            }
+            
+            .cv-item-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .cv-item-date {
+                margin-left: 0;
+                margin-top: 3px;
+            }
+            
+            .header-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2.2rem;">CV/ATS Maker</h1>
+        
+        <div class="header-buttons">
+            <button type="button" class="btn" onclick="updatePreview()">Update Preview</button>
+            <button type="button" class="btn btn-secondary" onclick="exportToPDF()">Export to PDF</button>
+        </div>
+        
+        <div class="editor-section">
+            <div class="form-section">
+                <h3>Personal Information</h3>
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name">
+                        <div class="section-tip">Example: Bryan Agung Pratama</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="Enter your email address">
+                        <div class="section-tip">Example: your.email@example.com</div>
+                    </div>
+                </div>
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" placeholder="Enter your city and country">
+                        <div class="section-tip">Example: Jakarta, Indonesia</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="portfolio">Portfolio</label>
+                        <input type="url" id="portfolio" placeholder="Enter your portfolio URL">
+                        <div class="section-tip">Example: https://yourportfolio.com</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Work Experience</h3>
+                <div id="workExperience">
+                    <div class="work-item">
+                        <div class="two-column">
+                            <div class="form-group">
+                                <label>Company</label>
+                                <input type="text" class="company" placeholder="Company name">
+                            </div>
+                            <div class="form-group">
+                                <label>Position</label>
+                                <input type="text" class="position" placeholder="Your position">
+                            </div>
+                        </div>
+                        <div class="two-column">
+                            <div class="form-group">
+                                <label>Duration</label>
+                                <input type="text" class="duration" placeholder="Start date - End date">
+                                <div class="section-tip">Example: Aug 2024 - Dec 2024</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Location</label>
+                                <input type="text" class="workLocation" placeholder="Company location">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="description" placeholder="• Describe your responsibilities and achievements&#10;• Use bullet points for better readability&#10;• Include specific metrics and results"></textarea>
+                        </div>
+                        <div class="item-controls">
+                            <button type="button" class="btn remove-item-btn" onclick="removeWorkItem(this)">Remove Experience</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn add-item-btn" onclick="addWorkItem()">+ Add Work Experience</button>
+            </div>
+            
+            <div class="form-section">
+                <h3>Education</h3>
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="university">University</label>
+                        <input type="text" id="university" placeholder="University name">
+                    </div>
+                    <div class="form-group">
+                        <label for="degree">Degree</label>
+                        <input type="text" id="degree" placeholder="Degree and major">
+                    </div>
+                </div>
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="graduationDate">Graduation Date</label>
+                        <input type="text" id="graduationDate" placeholder="Graduation date">
+                        <div class="section-tip">Example: Jul 2025</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="eduLocation">Location</label>
+                        <input type="text" id="eduLocation" placeholder="University location">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="gpa">GPA</label>
+                    <input type="text" id="gpa" placeholder="Your GPA">
+                    <div class="section-tip">Example: 3.9/4.0</div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Projects</h3>
+                <div id="projects">
+                    <div class="project-item">
+                        <div class="two-column">
+                            <div class="form-group">
+                                <label>Project Name</label>
+                                <input type="text" class="projectName" placeholder="Project title">
+                            </div>
+                            <div class="form-group">
+                                <label>Duration</label>
+                                <input type="text" class="projectDuration" placeholder="Project duration">
+                                <div class="section-tip">Example: Apr 2025 - Jun 2025</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="projectDescription" placeholder="• Describe the project and your role&#10;• Technologies used&#10;• Key achievements and outcomes"></textarea>
+                        </div>
+                        <div class="item-controls">
+                            <button type="button" class="btn remove-item-btn" onclick="removeProjectItem(this)">Remove Project</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn add-item-btn" onclick="addProjectItem()">+ Add Project</button>
+            </div>
+            
+            <div class="form-section">
+                <h3>Skills & Technologies</h3>
+                <div class="form-group">
+                    <label for="certifications">Certifications</label>
+                    <input type="text" id="certifications" placeholder="List your certifications">
+                    <div class="section-tip">Separate with commas: AWS Certified, Google Analytics, etc.</div>
+                </div>
+                <div class="form-group">
+                    <label for="skills">Skills</label>
+                    <textarea id="skills" placeholder="List your key skills"></textarea>
+                    <div class="section-tip">Example: Project Management, UX Design, System Analysis</div>
+                </div>
+                <div class="form-group">
+                    <label for="technologies">Technologies</label>
+                    <textarea id="technologies" placeholder="List technologies you're proficient with"></textarea>
+                    <div class="section-tip">Example: JavaScript, Python, React, SQL, Docker</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <h3 style="text-align: center; margin-bottom: 25px; color: #2c3e50; font-size: 1.5rem;">CV Preview</h3>
+            <div class="cv-preview" id="cvPreview">
+                <!-- Preview will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize with default data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set sample data for demonstration
+            document.getElementById('fullName').value = 'Bryan Agung Pratama';
+            document.getElementById('email').value = 'bryan.agung17@gmail.com';
+            document.getElementById('location').value = 'Jakarta Selatan';
+            document.getElementById('portfolio').value = 'https://bryanportfolio.com';
+            
+            document.querySelector('.company').value = 'Isuzu Astra Motor Indonesia';
+            document.querySelector('.position').value = 'IT Intern';
+            document.querySelector('.duration').value = 'Aug 2024 - Dec 2024';
+            document.querySelector('.workLocation').value = 'Jakarta Utara, Sunter';
+            document.querySelector('.description').value = '• Created Robotic Process Automation for System Suggestion Approval E-Signature\n• Collaborated with cross-functional teams to detect system issues\n• Managed Asset Register using Asset Management System\n• Assisted with IT project staging and ISO compliance';
+            
+            document.getElementById('university').value = 'Universitas Pembangunan Nasional Veteran Jakarta';
+            document.getElementById('degree').value = 'Information Systems Associate';
+            document.getElementById('graduationDate').value = 'Jul 2025';
+            document.getElementById('eduLocation').value = 'Jakarta Selatan, Pondok Labu';
+            document.getElementById('gpa').value = '3.9/4.0';
+            
+            document.querySelector('.projectName').value = 'Micro Scale MSME E Commerce Platform';
+            document.querySelector('.projectDuration').value = 'Apr 2025 - Jun 2025';
+            document.querySelector('.projectDescription').value = '• Designed and developed a digitalization solution for micro MSMEs\n• Implemented n8n for workflow automation\n• Created user-friendly interface with React and Tailwind CSS';
+            
+            document.getElementById('certifications').value = 'BNSP Certified Junior Web Developer';
+            document.getElementById('skills').value = 'Web Development, Project Management, UX Design, System Design';
+            document.getElementById('technologies').value = 'JavaScript, React, Node.js, SQL, Docker, Python, Java, C';
+            
+            updatePreview();
+        });
+
+        function addWorkItem() {
+            const container = document.getElementById('workExperience');
+            const newItem = document.createElement('div');
+            newItem.className = 'work-item';
+            newItem.innerHTML = `
+                <div class="two-column">
+                    <div class="form-group">
+                        <label>Company</label>
+                        <input type="text" class="company" placeholder="Company name">
+                    </div>
+                    <div class="form-group">
+                        <label>Position</label>
+                        <input type="text" class="position" placeholder="Your position">
+                    </div>
+                </div>
+                <div class="two-column">
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <input type="text" class="duration" placeholder="Start date - End date">
+                        <div class="section-tip">Example: Aug 2024 - Dec 2024</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" class="workLocation" placeholder="Company location">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea class="description" placeholder="• Describe your responsibilities and achievements&#10;• Use bullet points for better readability&#10;• Include specific metrics and results"></textarea>
+                </div>
+                <div class="item-controls">
+                    <button type="button" class="btn remove-item-btn" onclick="removeWorkItem(this)">Remove Experience</button>
+                </div>
+            `;
+            container.appendChild(newItem);
+        }
+
+        function removeWorkItem(button) {
+            const workItems = document.querySelectorAll('.work-item');
+            if (workItems.length > 1) {
+                button.closest('.work-item').remove();
+            } else {
+                alert("You need at least one work experience entry.");
+            }
+        }
+
+        function addProjectItem() {
+            const container = document.getElementById('projects');
+            const newItem = document.createElement('div');
+            newItem.className = 'project-item';
+            newItem.innerHTML = `
+                <div class="two-column">
+                    <div class="form-group">
+                        <label>Project Name</label>
+                        <input type="text" class="projectName" placeholder="Project title">
+                    </div>
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <input type="text" class="projectDuration" placeholder="Project duration">
+                        <div class="section-tip">Example: Apr 2025 - Jun 2025</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea class="projectDescription" placeholder="• Describe the project and your role&#10;• Technologies used&#10;• Key achievements and outcomes"></textarea>
+                </div>
+                <div class="item-controls">
+                    <button type="button" class="btn remove-item-btn" onclick="removeProjectItem(this)">Remove Project</button>
+                </div>
+            `;
+            container.appendChild(newItem);
+        }
+
+        function removeProjectItem(button) {
+            const projectItems = document.querySelectorAll('.project-item');
+            if (projectItems.length > 1) {
+                button.closest('.project-item').remove();
+            } else {
+                alert("You need at least one project entry.");
+            }
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('cvPreview');
+            
+            // Personal Information
+            const fullName = document.getElementById('fullName').value || 'Your Name';
+            const email = document.getElementById('email').value || 'your.email@example.com';
+            const location = document.getElementById('location').value || 'Your Location';
+            const portfolio = document.getElementById('portfolio').value || '#';
+            const portfolioText = portfolio === '#' ? 'Portfolio' : 'Portfolio';
+            
+            // Education
+            const university = document.getElementById('university').value || 'Your University';
+            const degree = document.getElementById('degree').value || 'Your Degree';
+            const graduationDate = document.getElementById('graduationDate').value || 'Graduation Date';
+            const eduLocation = document.getElementById('eduLocation').value || 'University Location';
+            const gpa = document.getElementById('gpa').value || '';
+            
+            // Skills
+            const certifications = document.getElementById('certifications').value || '';
+            const skills = document.getElementById('skills').value || '';
+            const technologies = document.getElementById('technologies').value || '';
+            
+            let html = `
+                <div class="cv-header">
+                    <div class="cv-name">${fullName}</div>
+                    <div class="cv-contact">
+                        ${email ? `<span>${email}</span>` : ''}
+                        ${location ? `<span>${location}</span>` : ''}
+                        ${portfolio ? `<span><a href="${portfolio}">${portfolioText}</a></span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Work Experience
+            const workItems = document.querySelectorAll('.work-item');
+            if (workItems.length > 0) {
+                html += '<div class="cv-section"><div class="cv-section-title">Work Experience</div>';
+                workItems.forEach(item => {
+                    const company = item.querySelector('.company').value || 'Company Name';
+                    const position = item.querySelector('.position').value || 'Position';
+                    const duration = item.querySelector('.duration').value || 'Duration';
+                    const workLocation = item.querySelector('.workLocation').value || 'Location';
+                    const description = item.querySelector('.description').value || '';
+                    
+                    html += `
+                        <div class="cv-item">
+                            <div class="cv-item-header">
+                                <div>
+                                    <div class="cv-item-title">${company}</div>
+                                    <div class="cv-item-subtitle">${position}</div>
+                                    <div class="cv-item-location">${workLocation}</div>
+                                </div>
+                                <div class="cv-item-date">${duration}</div>
+                            </div>
+                            <div class="cv-item-description">
+                                ${formatDescription(description)}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            // Education
+            html += `
+                <div class="cv-section">
+                    <div class="cv-section-title">Education</div>
+                    <div class="cv-item">
+                        <div class="cv-item-header">
+                            <div>
+                                <div class="cv-item-title">${university}</div>
+                                <div class="cv-item-subtitle">${degree}</div>
+                                <div class="cv-item-location">${eduLocation}</div>
+                            </div>
+                            <div class="cv-item-date">${graduationDate}</div>
+                        </div>
+                        ${gpa ? `<div class="cv-item-description"><ul><li>GPA: ${gpa}</li></ul></div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Projects
+            const projectItems = document.querySelectorAll('.project-item');
+            if (projectItems.length > 0) {
+                html += '<div class="cv-section"><div class="cv-section-title">Projects</div>';
+                projectItems.forEach(item => {
+                    const projectName = item.querySelector('.projectName').value || 'Project Name';
+                    const projectDuration = item.querySelector('.projectDuration').value || 'Duration';
+                    const projectDescription = item.querySelector('.projectDescription').value || '';
+                    
+                    html += `
+                        <div class="cv-item">
+                            <div class="cv-item-header">
+                                <div class="cv-item-title">${projectName}</div>
+                                <div class="cv-item-date">${projectDuration}</div>
+                            </div>
+                            <div class="cv-item-description">
+                                ${formatDescription(projectDescription)}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            // Skills & Technologies
+            if (certifications || skills || technologies) {
+                html += `
+                    <div class="cv-section">
+                        <div class="cv-section-title">Certifications, Skills & Technologies</div>
+                        <div class="cv-item">
+                            <div class="cv-item-description">
+                                <ul>
+                                    ${certifications ? `<li><strong>Certifications:</strong> ${certifications}</li>` : ''}
+                                    ${skills ? `<li><strong>Skills:</strong> ${skills}</li>` : ''}
+                                    ${technologies ? `<li><strong>Technologies:</strong> ${technologies}</li>` : ''}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            preview.innerHTML = html;
+        }
+        
+        function formatDescription(text) {
+            if (!text) return '';
+            
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length === 0) return '';
+            
+            const listItems = lines.map(line => {
+                line = line.trim();
+                if (line.startsWith('•')) {
+                    return `<li>${line.substring(1).trim()}</li>`;
+                } else if (line.startsWith('-')) {
+                    return `<li>${line.substring(1).trim()}</li>`;
+                } else {
+                    return `<li>${line}</li>`;
+                }
+            }).join('');
+            
+            return `<ul>${listItems}</ul>`;
+        }
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            // Get form data
+            const fullName = document.getElementById('fullName').value || 'Your Name';
+            const email = document.getElementById('email').value || 'your.email@example.com';
+            const location = document.getElementById('location').value || 'Your Location';
+            const portfolio = document.getElementById('portfolio').value || 'Portfolio';
+            
+            let yPosition = 20;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 20;
+            const contentWidth = 170;
+            
+            // Helper function to check if we need a new page
+            function checkPageBreak(neededHeight) {
+                if (yPosition + neededHeight > pageHeight - margin) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+            }
+            
+            // Set font
+            doc.setFont('times');
+            
+            // Header
+            doc.setFontSize(22);
+            doc.setFont(undefined, 'bold');
+            doc.text(fullName, margin, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            let contactInfo = `${email} | ${location} | ${portfolio}`;
+            doc.text(contactInfo, margin, yPosition);
+            yPosition += 15;
+            
+            // Work Experience
+            const workItems = document.querySelectorAll('.work-item');
+            if (workItems.length > 0) {
+                checkPageBreak(20);
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('WORK EXPERIENCE', margin, yPosition);
+                doc.line(margin, yPosition + 2, margin + 170, yPosition + 2);
+                yPosition += 12;
+                
+                workItems.forEach(item => {
+                    const company = item.querySelector('.company').value || 'Company Name';
+                    const position = item.querySelector('.position').value || 'Position';
+                    const duration = item.querySelector('.duration').value || 'Duration';
+                    const workLocation = item.querySelector('.workLocation').value || 'Location';
+                    const description = item.querySelector('.description').value || '';
+                    
+                    checkPageBreak(25);
+                    
+                    // Company name and duration
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(company, margin, yPosition);
+                    doc.text(duration, margin + contentWidth, yPosition, { align: 'right' });
+                    yPosition += 6;
+                    
+                    // Position and location
+                    doc.setFont(undefined, 'italic');
+                    doc.text(position, margin, yPosition);
+                    doc.text(workLocation, margin + contentWidth, yPosition, { align: 'right' });
+                    yPosition += 8;
+                    
+                    // Description
+                    if (description) {
+                        doc.setFont(undefined, 'normal');
+                        const lines = description.split('\n').filter(line => line.trim());
+                        lines.forEach(line => {
+                            checkPageBreak(6);
+                            line = line.trim();
+                            if (line.startsWith('•') || line.startsWith('-')) {
+                                line = '• ' + line.substring(1).trim();
+                            } else if (line) {
+                                line = '• ' + line;
+                            }
+                            const splitLines = doc.splitTextToSize(line, contentWidth - 5);
+                            splitLines.forEach(splitLine => {
+                                doc.text(splitLine, margin + 5, yPosition);
+                                yPosition += 5;
+                            });
+                        });
+                    }
+                    yPosition += 5;
+                });
+                yPosition += 5;
+            }
+            
+            // Education
+            const university = document.getElementById('university').value || 'Your University';
+            const degree = document.getElementById('degree').value || 'Your Degree';
+            const graduationDate = document.getElementById('graduationDate').value || 'Graduation Date';
+            const eduLocation = document.getElementById('eduLocation').value || 'University Location';
+            const gpa = document.getElementById('gpa').value || '';
+            
+            checkPageBreak(20);
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('EDUCATION', margin, yPosition);
+            doc.line(margin, yPosition + 2, margin + contentWidth, yPosition + 2);
+            yPosition += 12;
+            
+            // University and date
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text(university, margin, yPosition);
+            doc.text(graduationDate, margin + contentWidth, yPosition, { align: 'right' });
+            yPosition += 6;
+            
+            // Degree and location
+            doc.setFont(undefined, 'italic');
+            doc.text(degree, margin, yPosition);
+            doc.text(eduLocation, margin + contentWidth, yPosition, { align: 'right' });
+            yPosition += 8;
+            
+            if (gpa) {
+                doc.setFont(undefined, 'normal');
+                doc.text('• GPA: ' + gpa, margin + 5, yPosition);
+                yPosition += 6;
+            }
+            yPosition += 10;
+            
+            // Projects
+            const projectItems = document.querySelectorAll('.project-item');
+            if (projectItems.length > 0) {
+                checkPageBreak(20);
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('PROJECTS', margin, yPosition);
+                doc.line(margin, yPosition + 2, margin + contentWidth, yPosition + 2);
+                yPosition += 12;
+                
+                projectItems.forEach(item => {
+                    const projectName = item.querySelector('.projectName').value || 'Project Name';
+                    const projectDuration = item.querySelector('.projectDuration').value || 'Duration';
+                    const projectDescription = item.querySelector('.projectDescription').value || '';
+                    
+                    checkPageBreak(15);
+                    
+                    // Project name and duration
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(projectName, margin, yPosition);
+                    doc.text(projectDuration, margin + contentWidth, yPosition, { align: 'right' });
+                    yPosition += 8;
+                    
+                    // Description
+                    if (projectDescription) {
+                        doc.setFont(undefined, 'normal');
+                        const lines = projectDescription.split('\n').filter(line => line.trim());
+                        lines.forEach(line => {
+                            checkPageBreak(6);
+                            line = line.trim();
+                            if (line.startsWith('•') || line.startsWith('-')) {
+                                line = '• ' + line.substring(1).trim();
+                            } else if (line) {
+                                line = '• ' + line;
+                            }
+                            const splitLines = doc.splitTextToSize(line, contentWidth - 5);
+                            splitLines.forEach(splitLine => {
+                                doc.text(splitLine, margin + 5, yPosition);
+                                yPosition += 5;
+                            });
+                        });
+                    }
+                    yPosition += 5;
+                });
+                yPosition += 5;
+            }
+            
+            // Skills & Technologies
+            const certifications = document.getElementById('certifications').value || '';
+            const skills = document.getElementById('skills').value || '';
+            const technologies = document.getElementById('technologies').value || '';
+            
+            if (certifications || skills || technologies) {
+                checkPageBreak(20);
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('CERTIFICATIONS, SKILLS & TECHNOLOGIES', margin, yPosition);
+                doc.line(margin, yPosition + 2, margin + contentWidth, yPosition + 2);
+                yPosition += 12;
+                
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                
+                if (certifications) {
+                    checkPageBreak(6);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('• Certifications: ', margin + 5, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(certifications, margin + 35, yPosition);
+                    yPosition += 6;
+                }
+                
+                if (skills) {
+                    checkPageBreak(6);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('• Skills: ', margin + 5, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    const skillsLines = doc.splitTextToSize(skills, contentWidth - 25);
+                    skillsLines.forEach((line, index) => {
+                        if (index === 0) {
+                            doc.text(line, margin + 25, yPosition);
+                        } else {
+                            yPosition += 5;
+                            doc.text(line, margin + 5, yPosition);
+                        }
+                    });
+                    yPosition += 6;
+                }
+                
+                if (technologies) {
+                    checkPageBreak(6);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('• Technologies: ', margin + 5, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    const techLines = doc.splitTextToSize(technologies, contentWidth - 35);
+                    techLines.forEach((line, index) => {
+                        if (index === 0) {
+                            doc.text(line, margin + 40, yPosition);
+                        } else {
+                            yPosition += 5;
+                            doc.text(line, margin + 5, yPosition);
+                        }
+                    });
+                    yPosition += 6;
+                }
+            }
+            
+            // Save the PDF
+            doc.save('CV_' + fullName.replace(/\s+/g, '_') + '.pdf');
+        }
+    </script>
+</body>
+</html>
